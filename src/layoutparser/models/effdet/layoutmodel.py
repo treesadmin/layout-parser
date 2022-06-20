@@ -163,17 +163,11 @@ class EfficientDetLayoutModel(BaseLayoutModel):
 
             model_path = PathManager.get_local_path(model_path)
 
-            self.model = create_model(
-                model_name,
-                num_classes=num_classes,
-                bench_task="predict",
-                pretrained=True,
-                checkpoint_path=model_path,
-            )
         else:
             assert (
                 model_path is not None
-            ), f"When the specified model is not layoutparser-based, you need to specify the model_path"
+            ), "When the specified model is not layoutparser-based, you need to specify the model_path"
+
 
             assert (
                 label_map is not None or "num_classes" in extra_config
@@ -186,14 +180,13 @@ class EfficientDetLayoutModel(BaseLayoutModel):
 
             num_classes = len(label_map) if label_map else extra_config["num_classes"]
 
-            self.model = create_model(
-                model_name,
-                num_classes=num_classes,
-                bench_task="predict",
-                pretrained=True,
-                checkpoint_path=model_path,
-            )
-
+        self.model = create_model(
+            model_name,
+            num_classes=num_classes,
+            bench_task="predict",
+            pretrained=True,
+            checkpoint_path=model_path,
+        )
         self.model.to(self.device)
         self.model.eval()
         self.config = self.model.config
@@ -210,8 +203,7 @@ class EfficientDetLayoutModel(BaseLayoutModel):
             {key: val.to(self.device) for key, val in image_info.items()},
         )
 
-        layout = self.gather_output(model_outputs)
-        return layout
+        return self.gather_output(model_outputs)
 
     def gather_output(self, model_outputs: "torch.Tensor") -> Layout:
 
@@ -226,7 +218,7 @@ class EfficientDetLayoutModel(BaseLayoutModel):
 
                 score = float(det[4])
                 pred_cat = int(det[5])
-                x, y, w, h = det[0:4].tolist()
+                x, y, w, h = det[:4].tolist()
 
                 if (
                     score < self.output_confidence_threshold

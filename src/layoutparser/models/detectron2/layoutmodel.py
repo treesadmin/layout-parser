@@ -155,8 +155,7 @@ class Detectron2LayoutModel(BaseLayoutModel):
 
         image = self.image_loader(image)
         outputs = self.model(image)
-        layout = self.gather_output(outputs)
-        return layout
+        return self.gather_output(outputs)
 
     def image_loader(self, image: Union["np.ndarray", "Image.Image"]):
         # Convert PIL Image Input

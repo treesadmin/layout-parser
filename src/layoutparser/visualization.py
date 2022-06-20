@@ -66,7 +66,7 @@ def _draw_vertical_text(
     char_heights = [
         image_font.getsize(c)[1] if c != " " else space_height for c in text
     ]
-    text_width = max([image_font.getsize(c)[0] for c in text])
+    text_width = max(image_font.getsize(c)[0] for c in text)
     text_height = sum(char_heights) + character_spacing * len(text)
 
     txt_img = Image.new("RGBA", (text_width, text_height), color=text_background_color)
@@ -77,11 +77,12 @@ def _draw_vertical_text(
 
     for i, c in enumerate(text):
         txt_img_draw.text(
-            (0, sum(char_heights[0:i]) + i * character_spacing),
+            (0, sum(char_heights[:i]) + i * character_spacing),
             c,
             fill=text_color,
             font=image_font,
         )
+
 
     return txt_img.crop(txt_img.getbbox())
 
@@ -125,10 +126,7 @@ def _create_new_canvas(canvas, arrangement, text_background_color):
 
 
 def _create_color_palette(types):
-    return {
-        type: color
-        for type, color in zip(types, cycle(DEAFULT_COLOR_PALETTE.split("-")))
-    }
+    return dict(zip(types, cycle(DEAFULT_COLOR_PALETTE.split("-"))))
 
 
 def _get_color_rgb(color_string: Any, alpha: float) -> Tuple[int, int, int, int]:
@@ -153,10 +151,11 @@ def _get_color_rgb(color_string: Any, alpha: float) -> Tuple[int, int, int, int]
 
 def _draw_box_outline_on_handler(draw, block, color, width):
 
-    if not hasattr(block, "points"):
-        points = (cvt_coordinates_to_points(block.coordinates),)
-    else:
-        points = block.points
+    points = (
+        block.points
+        if hasattr(block, "points")
+        else (cvt_coordinates_to_points(block.coordinates),)
+    )
 
     vertices = points.ravel().tolist()
     drawing_vertices = vertices + vertices[:2]
@@ -191,8 +190,7 @@ def image_loader(func):
             canvas = canvas.copy()
         elif isinstance(canvas, np.ndarray):
             canvas = Image.fromarray(canvas)
-        out = func(canvas, layout, *args, **kwargs)
-        return out
+        return func(canvas, layout, *args, **kwargs)
 
     return wrap
 
@@ -209,7 +207,7 @@ def draw_transparent_box(
     """
 
     if color_map is None:
-        all_types = set([b.type for b in blocks if hasattr(b, "type")])
+        all_types = {b.type for b in blocks if hasattr(b, "type")}
         color_map = _create_color_palette(all_types)
 
     canvas = canvas.copy()
@@ -309,7 +307,7 @@ def draw_box(
         font_obj = _create_font_object(id_font_size, id_font_path)
 
     if color_map is None:
-        all_types = set([b.type for b in layout if hasattr(b, "type")])
+        all_types = {b.type for b in layout if hasattr(b, "type")}
         color_map = _create_color_palette(all_types)
 
     for idx, ele in enumerate(layout):
@@ -318,10 +316,11 @@ def draw_box(
             ele = ele.put_on_canvas(canvas)
 
         outline_color = (
-            DEFAULT_OUTLINE_COLOR
-            if not isinstance(ele, TextBlock)
-            else color_map.get(ele.type, DEFAULT_OUTLINE_COLOR)
+            color_map.get(ele.type, DEFAULT_OUTLINE_COLOR)
+            if isinstance(ele, TextBlock)
+            else DEFAULT_OUTLINE_COLOR
         )
+
 
         _draw_box_outline_on_handler(draw, ele, outline_color, box_width)
 
@@ -333,7 +332,7 @@ def draw_box(
                 ele_id = ele.id or idx
                 text += str(ele_id)
             if show_element_type:
-                text = str(ele.type) if not text else text + ": " + str(ele.type)
+                text = f"{text}: {str(ele.type)}" if text else str(ele.type)
 
             start_x, start_y = ele.coordinates[:2]
             text_w, text_h = font_obj.getsize(text)
@@ -454,9 +453,8 @@ def draw_text(
         f"The text_box_alpha value {text_box_alpha} is not within range [0,1]."
     )
 
-    if with_box_on_text:
-        if text_box_width is None:
-            text_box_width = _calculate_default_box_width(canvas)
+    if with_box_on_text and text_box_width is None:
+        text_box_width = _calculate_default_box_width(canvas)
 
     if with_layout:
         canvas = draw_box(canvas, layout, **kwargs)
@@ -473,8 +471,7 @@ def draw_text(
     )
     draw = ImageDraw.Draw(canvas, "RGBA")
 
-    for idx, ele in enumerate(layout):
-
+    for ele in layout:
         if with_box_on_text:
             modified_box = ele.pad(right=text_box_width, bottom=text_box_width)
 

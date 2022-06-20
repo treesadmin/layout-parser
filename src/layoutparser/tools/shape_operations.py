@@ -111,8 +111,8 @@ def simple_line_detection(
         y_a = token_a.block.center[1]
         y_b = token_b.block.center[1]
 
-        a_left, a_right = token_a.block.coordinates[0::2]
-        b_left, b_right = token_b.block.coordinates[0::2]
+        a_left, a_right = token_a.block.coordinates[::2]
+        b_left, b_right = token_b.block.coordinates[::2]
 
         return (
             abs(y_a - y_b) <= y_tolerance
@@ -158,10 +158,8 @@ def group_textblocks_based_on_category(
     else:
         aggregation_func = None
 
-    detected_group_boxes = generalized_connected_component_analysis_1d(
+    return generalized_connected_component_analysis_1d(
         layout,
         scoring_func=lambda a, b: a.type == b.type,
         aggregation_func=aggregation_func,
     )
-
-    return detected_group_boxes

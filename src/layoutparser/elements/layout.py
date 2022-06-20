@@ -67,8 +67,7 @@ class Layout(MutableSequence):
         return len(self._blocks)
 
     def __iter__(self):
-        for ele in self._blocks:
-            yield ele
+        yield from self._blocks
 
     def __repr__(self):
         info_str = ", ".join([f"{key}={val}" for key, val in vars(self).items()])
@@ -326,11 +325,5 @@ class Layout(MutableSequence):
             pd.DataFrame:
                 The dataframe representation of layout object
         """
-        if enforce_same_type:
-            blocks = self.get_homogeneous_blocks()
-        else:
-            blocks = self
-
-        df = pd.DataFrame([ele.to_dict() for ele in blocks])
-
-        return df
+        blocks = self.get_homogeneous_blocks() if enforce_same_type else self
+        return pd.DataFrame([ele.to_dict() for ele in blocks])

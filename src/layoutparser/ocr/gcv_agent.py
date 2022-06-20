@@ -131,10 +131,9 @@ class GCVAgent(BaseOCRAgent):
 
     def _detect(self, img_content):
         img_content = _vision.types.Image(content=img_content)
-        response = self._client.document_text_detection(
+        return self._client.document_text_detection(
             image=img_content, image_context=self._context
         )
-        return response
 
     def detect(
         self,

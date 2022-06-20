@@ -27,40 +27,31 @@ from .file_utils import (
 
 _import_structure = {
     "elements": [
-        "Interval", 
-        "Rectangle", 
-        "Quadrilateral", 
-        "TextBlock", 
-        "Layout"
+        "Interval",
+        "Rectangle",
+        "Quadrilateral",
+        "TextBlock",
+        "Layout",
     ],
-    "visualization": [
-        "draw_box", 
-        "draw_text"
-    ],
-    "io": [
-        "load_json", 
-        "load_dict", 
-        "load_csv", 
-        "load_dataframe",
-        "load_pdf"
-    ],
-    "file_utils":[
+    "visualization": ["draw_box", "draw_text"],
+    "io": ["load_json", "load_dict", "load_csv", "load_dataframe", "load_pdf"],
+    "file_utils": [
         "is_torch_available",
         "is_torch_cuda_available",
         "is_detectron2_available",
         "is_paddle_available",
         "is_pytesseract_available",
         "is_gcv_available",
-        "requires_backends"
+        "requires_backends",
     ],
     "tools": [
         "generalized_connected_component_analysis_1d",
         "simple_line_detection",
-        "group_textblocks_based_on_category"
-    ]
+        "group_textblocks_based_on_category",
+    ],
+    "models": ["AutoLayoutModel"],
 }
 
-_import_structure["models"] = ["AutoLayoutModel"]
 
 if is_detectron2_available():
     _import_structure["models.detectron2"] = ["Detectron2LayoutModel"]

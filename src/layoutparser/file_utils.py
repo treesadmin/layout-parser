@@ -94,12 +94,11 @@ def is_torch_available():
 
 
 def is_torch_cuda_available():
-    if is_torch_available():
-        import torch
-
-        return torch.cuda.is_available()
-    else:
+    if not is_torch_available():
         return False
+    import torch
+
+    return torch.cuda.is_available()
 
 
 def is_detectron2_available():
@@ -229,7 +228,7 @@ class _LazyModule(ModuleType):
         return value
 
     def _get_module(self, module_name: str):
-        return importlib.import_module("." + module_name, self.__name__)
+        return importlib.import_module(f".{module_name}", self.__name__)
 
     def __reduce__(self):
         return (self.__class__, (self._name, self.__file__, self._import_structure))

@@ -85,10 +85,12 @@ class TesseractAgent(BaseOCRAgent):
         return cls(**kwargs)
 
     def _detect(self, img_content):
-        res = {}
-        res["text"] = pytesseract.image_to_string(
-            img_content, lang=self.lang, **self.configs
-        )
+        res = {
+            "text": pytesseract.image_to_string(
+                img_content, lang=self.lang, **self.configs
+            )
+        }
+
         _data = pytesseract.image_to_data(img_content, lang=self.lang, **self.configs)
         res["data"] = pd.read_csv(
             io.StringIO(_data), quoting=csv.QUOTE_NONE, encoding="utf-8", sep="\t"

@@ -204,8 +204,7 @@ class PaddleDetectionLayoutModel(BaseLayoutModel):
         config.enable_memory_optim()
         # disable feed, fetch OP, needed by zero_copy_run
         config.switch_use_feed_fetch_ops(False)
-        predictor = paddle.inference.create_predictor(config)
-        return predictor
+        return paddle.inference.create_predictor(config)
 
     def preprocess(self, image):
         """preprocess image
@@ -224,8 +223,7 @@ class PaddleDetectionLayoutModel(BaseLayoutModel):
         # transpose images
         image = image.transpose((2, 0, 1)).copy()
 
-        inputs = {}
-        inputs["image"] = np.array(image)[np.newaxis, :].astype("float32")
+        inputs = {"image": np.array(image)[np.newaxis, :].astype("float32")}
         inputs["im_shape"] = np.array(input_shape)[np.newaxis, :].astype("float32")
         inputs["scale_factor"] = np.array(scale_factor)[np.newaxis, :].astype("float32")
         return inputs
@@ -238,9 +236,7 @@ class PaddleDetectionLayoutModel(BaseLayoutModel):
             print("[WARNING] No object detected.")
             results = {"boxes": np.array([])}
         else:
-            results = {}
-            results["boxes"] = np_boxes
-
+            results = {"boxes": np_boxes}
         np_boxes = results["boxes"]
         expect_boxes = (np_boxes[:, 1] > self.threshold) & (np_boxes[:, 0] > -1)
         np_boxes = np_boxes[expect_boxes, :]
@@ -284,8 +280,7 @@ class PaddleDetectionLayoutModel(BaseLayoutModel):
         boxes_tensor = self.predictor.get_output_handle(output_names[0])
         np_boxes = boxes_tensor.copy_to_cpu()
 
-        layout = self.gather_output(np_boxes)
-        return layout
+        return self.gather_output(np_boxes)
 
     def image_loader(self, image: Union["np.ndarray", "Image.Image"]):
 

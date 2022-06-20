@@ -49,9 +49,7 @@ def perspective_transformation(
     src_mid = np.hstack([points, np.ones((points.shape[0], 1))]).T  # 3x4
     dst_mid = np.matmul(M, src_mid)
 
-    dst = (dst_mid / dst_mid[-1]).T[:, :2]  # 4x2
-
-    return dst
+    return (dst_mid / dst_mid[-1]).T[:, :2]
 
 
 def vertice_in_polygon(vertice: np.ndarray, polygon_points: np.ndarray) -> bool:
@@ -62,7 +60,7 @@ def vertice_in_polygon(vertice: np.ndarray, polygon_points: np.ndarray) -> bool:
 
     points = polygon_points - vertice  # shift the coordinates origin to the vertice
     edges = np.append(points, points[0:1, :], axis=0)
-    return all([np.linalg.det([e1, e2]) >= 0 for e1, e2 in zip(edges, edges[1:])])
+    return all(np.linalg.det([e1, e2]) >= 0 for e1, e2 in zip(edges, edges[1:]))
     # If the points are ordered clockwise, the det should <=0
 
 

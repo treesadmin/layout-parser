@@ -70,23 +70,22 @@ def load_dict(data: Union[Dict, List[Dict]]) -> Union[BaseLayoutElement, Layout]
         if "page_data" in data:
             # It is a layout instance
             return Layout(load_dict(data["blocks"]), page_data=data["page_data"])
-        else:
+        if data["block_type"] not in BASECOORD_ELEMENT_NAMEMAP:
+            raise ValueError(f"Invalid block_type {data['block_type']}")
 
-            if data["block_type"] not in BASECOORD_ELEMENT_NAMEMAP:
-                raise ValueError(f"Invalid block_type {data['block_type']}")
-
-            # Check if it is a textblock
-            is_textblock = any(ele in data for ele in TextBlock._features)
-            if is_textblock:
-                return TextBlock.from_dict(data)
-            else:
-                return BASECOORD_ELEMENT_NAMEMAP[data["block_type"]].from_dict(data)
+        # Check if it is a textblock
+        is_textblock = any(ele in data for ele in TextBlock._features)
+        return (
+            TextBlock.from_dict(data)
+            if is_textblock
+            else BASECOORD_ELEMENT_NAMEMAP[data["block_type"]].from_dict(data)
+        )
 
     elif isinstance(data, list):
         return Layout([load_dict(ele) for ele in data])
 
     else:
-        raise ValueError(f"Invalid input JSON structure.")
+        raise ValueError("Invalid input JSON structure.")
 
 
 def load_csv(filename: str, block_type: str = None) -> Layout:
@@ -126,11 +125,11 @@ def load_dataframe(df: pd.DataFrame, block_type: str = None) -> Layout:
             The parsed Layout object from the CSV file.
     """
     df = df.copy()
-    if "points" in df.columns:
-        if df["points"].dtype == object:
-            df["points"] = df["points"].map(
-                lambda x: ast.literal_eval(x) if not pd.isna(x) else x
-            )
+    if "points" in df.columns and df["points"].dtype == object:
+        df["points"] = df["points"].map(
+            lambda x: x if pd.isna(x) else ast.literal_eval(x)
+        )
+
 
     if block_type is None:
         if "block_type" not in df.columns:

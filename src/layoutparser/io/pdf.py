@@ -60,7 +60,7 @@ def extract_words_for_page(
         df[["top", "bottom"]].clip(lower=0, upper=int(page.height)).astype("float")
     )
 
-    page_tokens = load_dataframe(
+    return load_dataframe(
         df.rename(
             columns={
                 "x0": "x_1",
@@ -72,8 +72,6 @@ def extract_words_for_page(
         ),
         block_type="rectangle",
     )
-
-    return page_tokens
 
 
 def load_pdf(
@@ -194,27 +192,26 @@ def load_pdf(
         page_tokens.page_data["width"] = float(cur_page.width)
         page_tokens.page_data["height"] = float(cur_page.height)
         page_tokens.page_data["index"] = page_id
-        
+
         all_page_layout.append(page_tokens)
 
     if not load_images:
         return all_page_layout
-    else:
-        import pdf2image
+    import pdf2image
 
-        pdf_images = pdf2image.convert_from_path(filename, dpi=dpi)
+    pdf_images = pdf2image.convert_from_path(filename, dpi=dpi)
 
-        for page_id, page_image in enumerate(pdf_images):
-            image_width, image_height = page_image.size
-            page_layout = all_page_layout[page_id]
-            layout_width = page_layout.page_data["width"]
-            layout_height = page_layout.page_data["height"]
-            if image_width != layout_width or image_height != layout_height:
-                scale_x = image_width / layout_width
-                scale_y = image_height / layout_height
-                page_layout = page_layout.scale((scale_x, scale_y))
-                page_layout.page_data["width"] = image_width
-                page_layout.page_data["height"] = image_height
-                all_page_layout[page_id] = page_layout
+    for page_id, page_image in enumerate(pdf_images):
+        image_width, image_height = page_image.size
+        page_layout = all_page_layout[page_id]
+        layout_width = page_layout.page_data["width"]
+        layout_height = page_layout.page_data["height"]
+        if image_width != layout_width or image_height != layout_height:
+            scale_x = image_width / layout_width
+            scale_y = image_height / layout_height
+            page_layout = page_layout.scale((scale_x, scale_y))
+            page_layout.page_data["width"] = image_width
+            page_layout.page_data["height"] = image_height
+            all_page_layout[page_id] = page_layout
 
-        return all_page_layout, pdf_images
+    return all_page_layout, pdf_images

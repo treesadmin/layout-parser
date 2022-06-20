@@ -20,12 +20,12 @@ def test_only_effdet_model():
 
     # When all the backeds are not installed, it should 
     # elicit only ImportErrors
-    
+
     config = "lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config"
     model = Detectron2LayoutModel(config)
     image = cv2.imread("tests/fixtures/model/test_model_image.jpg")
     layout = model.detect(image)
-    
+
     with pytest.raises(ImportError):
         from layoutparser import EfficientDetLayoutModel
         from layoutparser import PaddleDetectionLayoutModel

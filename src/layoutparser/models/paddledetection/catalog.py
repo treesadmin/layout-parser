@@ -66,9 +66,7 @@ def _get_untar_directory(tar_file: str) -> str:
 
     base_path = os.path.dirname(tar_file)
     file_name = os.path.splitext(os.path.basename(tar_file))[0]
-    target_folder = os.path.join(base_path, file_name)
-
-    return target_folder
+    return os.path.join(base_path, file_name)
 
 
 def _untar_model_weights(model_tar):
@@ -99,10 +97,10 @@ def is_cached_folder_exists_and_valid(cached):
     possible_extracted_model_folder = _get_untar_directory(cached)
     if not os.path.exists(possible_extracted_model_folder):
         return False
-    for tar_file in _TAR_FILE_NAME_LIST:
-        if not os.path.exists(os.path.join(possible_extracted_model_folder, tar_file)):
-            return False
-    return True
+    return all(
+        os.path.exists(os.path.join(possible_extracted_model_folder, tar_file))
+        for tar_file in _TAR_FILE_NAME_LIST
+    )
 
 
 class PaddleModelURLHandler(HTTPURLHandler):
@@ -155,7 +153,7 @@ class PaddleModelURLHandler(HTTPURLHandler):
             )
             filename = path.split("/")[-1]
             if len(filename) > self.MAX_FILENAME_LEN:
-                filename = filename[:100] + "_" + uuid.uuid4().hex
+                filename = f"{filename[:100]}_{uuid.uuid4().hex}"
 
             cached = os.path.join(dirname, filename)
 
@@ -167,7 +165,7 @@ class PaddleModelURLHandler(HTTPURLHandler):
             else:
                 with file_lock(cached):
                     if not os.path.isfile(cached):
-                        logger.info("Downloading {} ...".format(path))
+                        logger.info(f"Downloading {path} ...")
                         cached = download(path, dirname, filename=filename)
 
                     if path.endswith(".tar"):
@@ -180,7 +178,7 @@ class PaddleModelURLHandler(HTTPURLHandler):
                                 f"Not able to remove the cached tar file {cached}"
                             )
 
-                logger.info("URL {} cached in {}".format(path, model_dir))
+                logger.info(f"URL {path} cached in {model_dir}")
                 self.cache_map[path] = model_dir
 
         return self.cache_map[path]
